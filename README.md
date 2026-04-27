@@ -70,6 +70,7 @@ The project keeps the workflow simple and inspectable:
 - `src/monitoring`: local drift-report simulation
 - `tests`: fast pytest coverage using synthetic/sample data
 - `reports`: model card and monitoring concept notes
+- `docs`: portfolio positioning and public-sharing copy
 - `artifacts`: generated model and metric outputs, excluded from Git except `.gitkeep`
 
 ## Project Structure
@@ -85,6 +86,8 @@ The project keeps the workflow simple and inspectable:
 ├── data/
 │   ├── README.md
 │   └── sample/sample_online_shoppers.csv
+├── docs/
+│   └── portfolio_positioning.md
 ├── notebooks/
 │   └── .gitkeep
 ├── src/
@@ -383,6 +386,14 @@ reports/model_card.md
 ```
 
 It documents the model purpose, intended use, model candidates, evaluation metrics, limitations, business risks, monitoring needs, and future improvements.
+
+## Portfolio Positioning
+
+Public GitHub descriptions, suggested topics, LinkedIn copy, interview talking points, and resume bullet options are collected in:
+
+```text
+docs/portfolio_positioning.md
+```
 
 ## Monitoring Concept
 
