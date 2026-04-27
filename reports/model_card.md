@@ -91,7 +91,33 @@ The training pipeline reports:
 
 ROC-AUC is used for model selection because purchase outcomes are commonly imbalanced and ranking quality is useful before choosing an operating threshold.
 
-No fixed performance claim is made in this model card. Metrics depend on the local dataset version and should be reviewed after running `make train`.
+## Current Baseline Results
+
+Evaluation date: `2026-04-27T17:52:28.949481+00:00`
+
+Dataset used: local copy of the real UCI dataset at `data/raw/online_shoppers_intention.csv`
+
+Dataset shape: `12,330` sessions x `18` columns
+
+Target distribution:
+
+| Revenue | Sessions | Share |
+| --- | ---: | ---: |
+| False | 10,422 | 84.53% |
+| True | 1,908 | 15.47% |
+
+Model comparison:
+
+| Model | ROC-AUC | Precision | Recall | F1-score | Confusion Matrix [[TN, FP], [FN, TP]] |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Logistic Regression | 0.893 | 0.491 | 0.743 | 0.592 | [[1790, 294], [98, 284]] |
+| **Random Forest** | **0.916** | **0.761** | **0.474** | **0.584** | [[2027, 57], [201, 181]] |
+
+Selected model: `random_forest`
+
+Selection metric: `roc_auc`
+
+These are baseline holdout results for the portfolio MVP. They should not be interpreted as production performance guarantees.
 
 ## Limitations
 

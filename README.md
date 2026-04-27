@@ -92,11 +92,13 @@ The project keeps the workflow simple and inspectable:
 │   ├── features/preprocessing.py
 │   ├── models/train.py
 │   ├── models/evaluate.py
+│   ├── models/generate_report.py
 │   ├── models/predict.py
 │   ├── api/main.py
 │   └── monitoring/drift_report.py
 ├── tests/
 ├── reports/
+│   ├── model_results.md
 │   ├── model_card.md
 │   └── monitoring_report.md
 └── artifacts/
@@ -176,6 +178,50 @@ python3 -m src.models.evaluate
 ```
 
 The evaluation script loads `artifacts/model.joblib`, recreates the deterministic test split, and prints ROC-AUC, precision, recall, F1-score, and the confusion matrix.
+
+Generate the tracked model results report from the saved metrics:
+
+```bash
+make report
+```
+
+Equivalent command:
+
+```bash
+python3 -m src.models.generate_report
+```
+
+## Current Model Results
+
+The current baseline results are documented in:
+
+```text
+reports/model_results.md
+```
+
+These results were generated from the real UCI dataset downloaded locally to `data/raw/online_shoppers_intention.csv`. The raw dataset and generated model artifacts are intentionally not committed.
+
+Evaluation date: `2026-04-27T17:52:28.949481+00:00`
+
+Dataset shape: `12,330` sessions x `18` columns
+
+Target distribution:
+
+| Revenue | Sessions | Share |
+| --- | ---: | ---: |
+| False | 10,422 | 84.53% |
+| True | 1,908 | 15.47% |
+
+Model comparison:
+
+| Model | ROC-AUC | Precision | Recall | F1-score |
+| --- | ---: | ---: | ---: | ---: |
+| Logistic Regression | 0.893 | 0.491 | 0.743 | 0.592 |
+| **Random Forest** | **0.916** | **0.761** | **0.474** | **0.584** |
+
+Selected model: `random_forest`
+
+The Random Forest baseline had the strongest ROC-AUC in this run. Its higher precision and lower recall show the practical trade-off in an imbalanced conversion problem: the model is more selective about predicted purchases, but it misses some actual purchasers. A production use case would need threshold tuning based on business costs before any intervention.
 
 ## API Usage
 
@@ -307,6 +353,7 @@ Included in this MVP:
 - scikit-learn preprocessing and model pipelines
 - deterministic train/test split
 - baseline model comparison
+- tracked baseline model results report
 - metric and metadata artifact saving
 - reusable prediction helper
 - FastAPI serving

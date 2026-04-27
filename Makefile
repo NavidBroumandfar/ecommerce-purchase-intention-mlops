@@ -1,6 +1,6 @@
 PYTHON ?= python3
 
-.PHONY: install train evaluate test api docker-build docker-run clean
+.PHONY: install train evaluate report test api docker-build docker-run clean
 
 install:
 	$(PYTHON) -m pip install -r requirements.txt
@@ -10,6 +10,9 @@ train:
 
 evaluate:
 	$(PYTHON) -m src.models.evaluate
+
+report:
+	$(PYTHON) -m src.models.generate_report
 
 test:
 	$(PYTHON) -m pytest

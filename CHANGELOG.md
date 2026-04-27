@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Added documented baseline model results from the real UCI dataset.
+
 ## 0.1.0 - Portfolio MVP v1
 
 Initial public portfolio version.
