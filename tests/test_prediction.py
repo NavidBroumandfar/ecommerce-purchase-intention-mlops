@@ -77,3 +77,33 @@ def test_predict_purchase_returns_class_and_probability(tmp_path: Path) -> None:
     assert prediction["predicted_class"] in {0, 1}
     assert 0.0 <= prediction["purchase_probability"] <= 1.0
     assert prediction["model_version"] == "portfolio-mvp-v1"
+
+
+def test_predict_purchase_does_not_require_metadata(tmp_path: Path) -> None:
+    df = _training_dataframe()
+    result = train_model_candidates(
+        df,
+        model_candidates=_light_model_candidates(),
+        test_size=0.25,
+        random_state=42,
+    )
+
+    model_path = tmp_path / "model.joblib"
+    save_training_artifacts(
+        result,
+        model_path=model_path,
+        metrics_path=tmp_path / "metrics.json",
+        metadata_path=tmp_path / "model_metadata.json",
+    )
+
+    input_data = df.drop(columns=["Revenue"]).iloc[0].to_dict()
+    prediction = predict_purchase(
+        input_data,
+        model_path=model_path,
+        metadata_path=tmp_path / "missing_model_metadata.json",
+    )
+
+    assert prediction["predicted_class"] in {0, 1}
+    assert 0.0 <= prediction["purchase_probability"] <= 1.0
+    assert "model_version" not in prediction
+    assert "model_metadata" not in prediction

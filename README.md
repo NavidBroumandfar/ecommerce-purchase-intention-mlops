@@ -6,7 +6,7 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-API-009688)
 ![Docker](https://img.shields.io/badge/Docker-supported-2496ED)
 
-This repository is a production-oriented portfolio project that predicts whether an e-commerce website session is likely to end in a purchase.
+This repository is a portfolio project with production-style structure that predicts whether an e-commerce website session is likely to end in a purchase.
 
 It uses the UCI Online Shoppers Purchasing Intention Dataset and wraps a standard classification task in a local-first MLOps workflow: reproducible preprocessing, model training, evaluation, artifact saving, prediction serving, tests, Docker, CI, and lightweight monitoring documentation.
 
@@ -217,11 +217,13 @@ Model comparison:
 | Model | ROC-AUC | Precision | Recall | F1-score |
 | --- | ---: | ---: | ---: | ---: |
 | Logistic Regression | 0.893 | 0.491 | 0.743 | 0.592 |
-| **Random Forest** | **0.916** | **0.761** | **0.474** | **0.584** |
+| **Random Forest** | 0.916 | 0.761 | 0.474 | 0.584 |
 
 Selected model: `random_forest`
 
-The Random Forest baseline had the strongest ROC-AUC in this run. Its higher precision and lower recall show the practical trade-off in an imbalanced conversion problem: the model is more selective about predicted purchases, but it misses some actual purchasers. A production use case would need threshold tuning based on business costs before any intervention.
+The Random Forest baseline had the strongest ROC-AUC in this run, and 0.916 is a strong ranking result for this holdout baseline. The default threshold is more conservative: precision is 0.761, but recall is 0.474, so 201 of 382 actual purchasing sessions in the test split were false negatives.
+
+False negatives are missed buyers. False positives are non-purchasing sessions that could receive unnecessary targeting or intervention. A production use case would need threshold tuning based on business costs before any intervention.
 
 ## API Usage
 

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Tightened model-results interpretation around ROC-AUC, recall, false positives, and false negatives.
+- Added lightweight tests for report generation and prediction without optional metadata.
 - Added documented baseline model results from the real UCI dataset.
 
 ## 0.1.0 - Portfolio MVP v1

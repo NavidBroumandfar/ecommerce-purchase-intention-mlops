@@ -67,6 +67,9 @@ def test_training_produces_metrics_and_saves_artifacts(tmp_path: Path) -> None:
     assert result["best_model_name"] in result["metrics"]
     assert "roc_auc" in result["metrics"][result["best_model_name"]]
     assert "confusion_matrix" in result["metrics"][result["best_model_name"]]
+    assert result["metadata"]["stratified_split"] is True
+    assert result["metadata"]["random_state"] == 42
+    assert result["metadata"]["test_size"] == 0.25
 
     model_path = tmp_path / "model.joblib"
     metrics_path = tmp_path / "metrics.json"

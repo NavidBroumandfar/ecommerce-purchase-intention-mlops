@@ -2,7 +2,7 @@
 
 ## Model Purpose
 
-This model estimates whether an e-commerce visitor session is likely to result in a purchase. It is part of a production-oriented portfolio project that demonstrates a local-first MLOps workflow around a standard classification problem.
+This model estimates whether an e-commerce visitor session is likely to result in a purchase. It is part of a portfolio project with production-style structure that demonstrates a local-first MLOps workflow around a standard classification problem.
 
 The model is not presented as a deployed production system. It is intended to show clear data handling, preprocessing, training, evaluation, artifact management, API serving, and lifecycle documentation.
 
@@ -111,11 +111,13 @@ Model comparison:
 | Model | ROC-AUC | Precision | Recall | F1-score | Confusion Matrix [[TN, FP], [FN, TP]] |
 | --- | ---: | ---: | ---: | ---: | --- |
 | Logistic Regression | 0.893 | 0.491 | 0.743 | 0.592 | [[1790, 294], [98, 284]] |
-| **Random Forest** | **0.916** | **0.761** | **0.474** | **0.584** | [[2027, 57], [201, 181]] |
+| **Random Forest** | 0.916 | 0.761 | 0.474 | 0.584 | [[2027, 57], [201, 181]] |
 
 Selected model: `random_forest`
 
 Selection metric: `roc_auc`
+
+The selected model's ROC-AUC is strong for a baseline holdout result, but recall is moderate/low at the default threshold: 201 purchasing sessions were false negatives and 57 non-purchasing sessions were false positives. In business terms, false negatives are missed buyers and false positives can drive unnecessary targeting or intervention.
 
 These are baseline holdout results for the portfolio MVP. They should not be interpreted as production performance guarantees.
 

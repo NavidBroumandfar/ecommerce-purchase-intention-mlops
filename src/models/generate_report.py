@@ -95,6 +95,8 @@ def build_model_results_report(
     best_model_name = metrics["best_model_name"]
     best_model_display_name = _format_model_name(best_model_name)
     best_metrics = metrics["models"][best_model_name]
+    false_positives = int(best_metrics["confusion_matrix"][0][1])
+    false_negatives = int(best_metrics["confusion_matrix"][1][0])
     target_distribution = _target_distribution(df)
 
     distribution_lines = [
@@ -166,9 +168,11 @@ Best model metrics:
 
 ## Business Interpretation
 
-The {best_model_display_name} baseline achieved the strongest ROC-AUC in this run, which means it ranked purchasing sessions better than the other baseline candidate on the deterministic test split.
+The {best_model_display_name} baseline achieved the strongest ROC-AUC in this run, which means it ranked purchasing sessions better than the other baseline candidate on the deterministic test split. Its ROC-AUC of `{_format_metric(best_metrics["roc_auc"])}` is a strong baseline ranking result on this holdout split.
 
-The precision/recall trade-off matters for this use case. Because most sessions do not convert, a model can look strong on ranking metrics while still missing many purchasing sessions or producing false positives. A business team would need to choose an operating threshold based on the cost of missed purchases versus unnecessary interventions.
+The default classification threshold is more conservative: recall is `{_format_metric(best_metrics["recall"])}`, with `{false_negatives:,}` false negatives and `{false_positives:,}` false positives on the test split. False negatives are missed buyers; false positives are non-purchasing sessions that could receive unnecessary targeting or intervention.
+
+This is why the precision/recall trade-off matters for this use case. A business team would need to choose an operating threshold based on the cost of missed purchases versus unnecessary interventions.
 
 ## Limitations
 
