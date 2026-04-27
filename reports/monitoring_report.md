@@ -1,65 +1,95 @@
 # Monitoring Concept
 
-This project includes a lightweight local monitoring simulation. It is designed to show how monitoring would be approached, not to replace production observability.
+This project includes a lightweight local monitoring simulation. It is meant to demonstrate monitoring awareness in a portfolio MVP, not to replace production observability.
 
-## What Would Be Monitored
+The current script compares two CSV files and writes a JSON summary of basic distribution differences. It is useful for explaining the concept of drift, but it does not include scheduled jobs, alerting, dashboards, historical storage, or production incident response.
 
-Key monitoring areas:
+## What Data Drift Means
 
-- input feature distributions
-- prediction distribution
-- model performance when labeled outcomes become available
-- data quality issues such as missing values or unexpected categories
-- service health for the FastAPI endpoint
+Data drift occurs when new input data no longer looks like the data used to train or validate the model.
 
-## Feature Drift
+For this e-commerce use case, drift could appear as:
 
-Feature drift means the new prediction data no longer looks like the training or reference data. Examples include:
-
-- higher `BounceRates`
-- lower `PageValues`
-- new or shifted `TrafficType` values
+- higher or lower `BounceRates`
+- changes in `PageValues`
+- shifts in `TrafficType`
 - seasonal changes in `Month`
-- different proportions of `New_Visitor` and `Returning_Visitor`
+- a different mix of `New_Visitor`, `Returning_Visitor`, and `Other`
+- new or unexpected category values
+- changes in missing-value rates
 
-The local drift script compares simple numeric summaries and categorical value shares between two CSV files.
+The local drift script compares numeric summaries and categorical value shares between a reference dataset and a new dataset.
 
-## Prediction Distribution Drift
+## What Prediction Drift Means
 
-Prediction drift means the model starts producing a different mix of purchase probabilities or predicted classes. For example, a sudden increase in high purchase probabilities could indicate a real campaign effect, a data pipeline issue, or model instability.
+Prediction drift occurs when the model starts producing a different distribution of outputs.
 
-In a production system, prediction distributions would be logged over time and compared against reference windows.
+Examples:
 
-## Performance Degradation
+- the average purchase probability changes sharply
+- the share of sessions predicted as likely purchases increases or decreases
+- predictions cluster near 0 or 1 more than expected
+- the model produces high-confidence predictions for traffic that looks unfamiliar
 
-True model performance can only be measured once actual purchase outcomes are available. The key metrics to monitor would be:
+Prediction drift is not automatically bad. It may reflect a real business event, such as a campaign or seasonal sale. It should trigger investigation rather than an automatic conclusion.
+
+## Performance Monitoring
+
+Performance monitoring requires ground-truth purchase outcomes after predictions are made. Without delayed labels, the team can monitor inputs and predictions, but it cannot confirm whether the model is still accurate.
+
+When labels become available, useful metrics include:
 
 - ROC-AUC
 - precision
 - recall
 - F1-score
-- false positive and false negative counts
+- false positives and false negatives
+- segment-level performance by traffic source, visitor type, region, or device category
 
-For an e-commerce use case, recall and precision should be reviewed in the context of business actions. A false positive may waste marketing budget, while a false negative may miss a valuable session.
+For a business workflow, these metrics should be reviewed alongside the cost of wrong actions. A false positive may waste marketing budget, while a false negative may miss a valuable session.
 
 ## Retraining Trigger Concept
 
-Retraining could be considered when:
+A retraining review could be triggered when:
 
-- feature drift is persistent over multiple reporting windows
-- prediction distribution changes sharply without a known business reason
-- ROC-AUC or F1-score drops below an agreed threshold
-- important categorical values appear that were not present during training
-- the business changes the website, funnel, campaign strategy, or product catalog
+- important features drift for multiple reporting windows
+- prediction distributions shift without a known business reason
+- labeled performance falls below an agreed threshold
+- new categories appear frequently
+- the website, product catalog, marketing strategy, or traffic mix changes
+- business owners change the objective or intervention tied to the model
 
-The MVP does not retrain automatically. A human should review drift and performance reports before retraining.
+The MVP does not retrain automatically. A human should review monitoring evidence before retraining or replacing a model.
 
-## Limitations Of The Local Simulation
+## Why This Is Not Enterprise Monitoring
 
-- It compares CSV files manually instead of scheduled production logs.
-- It does not include alerting.
-- It does not store historical monitoring windows.
-- It does not connect predictions to delayed ground-truth labels.
-- It does not replace model governance or incident response.
+This repository intentionally stays local-first. The monitoring component does not include:
 
-The goal is to demonstrate monitoring awareness while keeping the portfolio project simple and local-first.
+- production data logging
+- streaming metrics
+- scheduled batch jobs
+- alert routing
+- dashboards
+- model registry integration
+- audit trails
+- automated retraining
+
+Those additions would be reasonable future work for a larger system, but they are outside the scope of this portfolio MVP.
+
+## Local Script
+
+Generate a simple drift-style JSON report:
+
+```bash
+python3 -m src.monitoring.drift_report \
+  --reference data/sample/sample_online_shoppers.csv \
+  --new data/sample/sample_online_shoppers.csv
+```
+
+Default output:
+
+```text
+reports/drift_report.json
+```
+
+The generated JSON report is ignored by Git.

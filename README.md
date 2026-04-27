@@ -1,34 +1,92 @@
 # E-commerce Purchase Intention MLOps Pipeline
 
-This repository turns a university-style classification dataset into a small, production-oriented machine learning project. It predicts whether an e-commerce website session is likely to result in a purchase.
+[![CI](https://github.com/NavidBroumandfar/ecommerce-purchase-intention-mlops/actions/workflows/ci.yml/badge.svg)](https://github.com/NavidBroumandfar/ecommerce-purchase-intention-mlops/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/Python-3.11%2B-blue)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-orange)
+![FastAPI](https://img.shields.io/badge/FastAPI-API-009688)
+![Docker](https://img.shields.io/badge/Docker-supported-2496ED)
 
-The fictional business case is Lunera Commerce, a European online retailer that wants a practical way to identify high-intent visitor sessions and evaluate model behavior before investing in a larger deployment.
+This repository is a production-oriented portfolio project that predicts whether an e-commerce website session is likely to end in a purchase.
+
+It uses the UCI Online Shoppers Purchasing Intention Dataset and wraps a standard classification task in a local-first MLOps workflow: reproducible preprocessing, model training, evaluation, artifact saving, prediction serving, tests, Docker, CI, and lightweight monitoring documentation.
+
+The project is intentionally scoped as a clean portfolio MVP. It is designed to demonstrate reproducibility, testing, API serving, and model lifecycle thinking without adding unnecessary infrastructure.
+
+## Overview
+
+The project trains baseline machine learning models on session-level browsing behavior, selects the best candidate by ROC-AUC, saves the trained pipeline as a local artifact, and exposes predictions through a FastAPI endpoint.
+
+Core workflow:
+
+1. Load and validate the dataset.
+2. Split features from the `Revenue` target.
+3. Build a preprocessing pipeline for numeric, categorical, and boolean-like fields.
+4. Train Logistic Regression and Random Forest candidates.
+5. Evaluate with ROC-AUC, precision, recall, F1-score, and confusion matrix.
+6. Save the best model and metadata under `artifacts/`.
+7. Serve predictions through a local FastAPI app.
 
 ## Business Problem
 
-E-commerce teams often need to decide which sessions deserve extra attention, such as personalized offers, remarketing, or sales funnel analysis. The goal here is to train a reproducible model that estimates purchase intent from session-level behavior.
+Lunera Commerce is a fictional European e-commerce company that wants to understand which visitor sessions show purchase intent.
 
-The target variable is `Revenue`, which indicates whether the session ended in a purchase.
+Purchase intention prediction matters because many commercial actions depend on identifying high-intent or low-intent sessions early enough to act. Examples include funnel diagnostics, campaign analysis, remarketing prioritization, or experimentation around offers and checkout flows.
+
+This repository does not claim to automate those decisions in production. It shows how a university-style data science use case can be structured as a maintainable ML project with clear interfaces, tests, artifacts, and operational thinking.
 
 ## Dataset
 
-The project uses the UCI Online Shoppers Purchasing Intention Dataset.
+Dataset: UCI Online Shoppers Purchasing Intention Dataset
 
-The raw dataset is not committed to Git. Place it locally at:
+Target variable: `Revenue`
+
+`Revenue` indicates whether a visitor session resulted in a purchase. The preprocessing code converts boolean or boolean-like string values into binary labels:
+
+- `1`: purchase
+- `0`: no purchase
+
+The real dataset is not committed to Git. Place it locally at:
 
 ```text
 data/raw/online_shoppers_intention.csv
 ```
 
-A small demo dataset is included at `data/sample/sample_online_shoppers.csv` for tests and API examples only.
+A small tracked sample is included at:
 
-## Repository Architecture
+```text
+data/sample/sample_online_shoppers.csv
+```
+
+The sample data is for tests, examples, and schema demonstration only. It should not be used for model conclusions.
+
+## Architecture
+
+The project keeps the workflow simple and inspectable:
+
+- `src/data`: CSV loading and dataset validation
+- `src/features`: feature/target splitting and scikit-learn preprocessing
+- `src/models`: training, evaluation, artifact loading, and prediction helpers
+- `src/api`: FastAPI serving layer
+- `src/monitoring`: local drift-report simulation
+- `tests`: fast pytest coverage using synthetic/sample data
+- `reports`: model card and monitoring concept notes
+- `artifacts`: generated model and metric outputs, excluded from Git except `.gitkeep`
+
+## Project Structure
 
 ```text
 .
+├── README.md
+├── CHANGELOG.md
+├── requirements.txt
+├── Dockerfile
+├── Makefile
+├── .github/workflows/ci.yml
 ├── data/
 │   ├── README.md
 │   └── sample/sample_online_shoppers.csv
+├── notebooks/
+│   └── .gitkeep
 ├── src/
 │   ├── data/load_data.py
 │   ├── features/preprocessing.py
@@ -39,58 +97,49 @@ A small demo dataset is included at `data/sample/sample_online_shoppers.csv` for
 │   └── monitoring/drift_report.py
 ├── tests/
 ├── reports/
-├── artifacts/
-├── Dockerfile
-├── Makefile
-└── .github/workflows/ci.yml
+│   ├── model_card.md
+│   └── monitoring_report.md
+└── artifacts/
+    └── .gitkeep
 ```
-
-## Current MVP Scope
-
-This is a local-first portfolio MVP. It includes:
-
-- CSV loading and schema validation
-- mixed-type preprocessing with scikit-learn
-- reproducible train/test splitting
-- Logistic Regression and Random Forest baselines
-- ROC-AUC, precision, recall, F1-score, and confusion matrix reporting
-- model and metadata artifacts saved with `joblib` and JSON
-- reusable prediction helper
-- FastAPI serving
-- pytest coverage that does not require the raw dataset
-- Docker support
-- GitHub Actions CI
-- a lightweight monitoring simulation concept
-
-It intentionally does not include Kubernetes, Terraform, Airflow, cloud deployment, or MLflow.
 
 ## Setup
 
-Create and activate a virtual environment, then install dependencies:
+Create a virtual environment and install dependencies:
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
 make install
 ```
 
-Equivalent command:
+Equivalent install command:
 
 ```bash
 python3 -m pip install -r requirements.txt
 ```
 
-The Makefile defaults to `python3` for macOS/Linux compatibility. If your activated virtual environment exposes `python`, you can run commands such as `make test PYTHON=python`.
+The Makefile defaults to `python3` for macOS/Linux compatibility:
 
-## Add the Dataset
+```makefile
+PYTHON ?= python3
+```
 
-Download the UCI Online Shoppers Purchasing Intention Dataset and place the CSV file here:
+If your activated virtual environment exposes `python` and you prefer that command, use:
+
+```bash
+make test PYTHON=python
+```
+
+## Training
+
+First place the real UCI CSV at:
 
 ```text
 data/raw/online_shoppers_intention.csv
 ```
 
-The file must contain the original `Revenue` column. If the dataset is missing, training and evaluation fail with a clear message instead of a long traceback.
-
-## Train the Model
+Then run:
 
 ```bash
 make train
@@ -102,7 +151,7 @@ Equivalent command:
 python3 -m src.models.train
 ```
 
-Training saves:
+Training writes generated artifacts to:
 
 ```text
 artifacts/model.joblib
@@ -110,11 +159,11 @@ artifacts/metrics.json
 artifacts/model_metadata.json
 ```
 
-These generated artifacts are excluded from Git.
+These files are intentionally ignored by Git. If the raw dataset is missing, the command exits with a clear message explaining where to place it.
 
-## Evaluate
+## Evaluation
 
-After training, run:
+After training, evaluate the saved model:
 
 ```bash
 make evaluate
@@ -126,39 +175,11 @@ Equivalent command:
 python3 -m src.models.evaluate
 ```
 
-Evaluation uses the same deterministic split logic as training and reports ROC-AUC, precision, recall, F1-score, and the confusion matrix.
+The evaluation script loads `artifacts/model.joblib`, recreates the deterministic test split, and prints ROC-AUC, precision, recall, F1-score, and the confusion matrix.
 
-## Run a Local Prediction
+## API Usage
 
-After training, call the prediction helper from Python:
-
-```python
-from src.models.predict import predict_purchase
-
-session = {
-    "Administrative": 1,
-    "Administrative_Duration": 18.2,
-    "Informational": 0,
-    "Informational_Duration": 0.0,
-    "ProductRelated": 12,
-    "ProductRelated_Duration": 340.1,
-    "BounceRates": 0.01,
-    "ExitRates": 0.03,
-    "PageValues": 12.3,
-    "SpecialDay": 0.0,
-    "Month": "Mar",
-    "OperatingSystems": 2,
-    "Browser": 2,
-    "Region": 3,
-    "TrafficType": 2,
-    "VisitorType": "Returning_Visitor",
-    "Weekend": False,
-}
-
-print(predict_purchase(session))
-```
-
-## Run the API
+Start the local API:
 
 ```bash
 make api
@@ -174,6 +195,15 @@ Health check:
 
 ```bash
 curl http://127.0.0.1:8000/health
+```
+
+Expected response:
+
+```json
+{
+  "status": "ok",
+  "project": "ecommerce-purchase-intention-mlops"
+}
 ```
 
 Example prediction request:
@@ -202,31 +232,31 @@ curl -X POST http://127.0.0.1:8000/predict \
   }'
 ```
 
-If `artifacts/model.joblib` is missing, the API returns a `503` response with instructions to train the model.
+Successful prediction responses include this structure. The class, probability, and selected model name depend on the trained artifact:
 
-## Tests
-
-```bash
-make test
+```json
+{
+  "predicted_class": 1,
+  "purchase_probability": 0.82,
+  "model_version": "portfolio-mvp-v1",
+  "model_metadata": {
+    "best_model_name": "random_forest",
+    "target_column": "Revenue"
+  }
+}
 ```
 
-Equivalent command:
+`model_metadata` is populated from `artifacts/model_metadata.json` when that file exists. The real metadata contains additional training details. If the model artifact is missing, `/predict` returns HTTP `503` with a clear message. `/health` works whether or not a model has been trained.
 
-```bash
-python3 -m pytest
-```
+## Docker Usage
 
-The tests use synthetic and sample data, so they pass without the real UCI dataset.
-
-## Docker
-
-Build the image:
+Build the API image:
 
 ```bash
 make docker-build
 ```
 
-Run the API container:
+Run the container:
 
 ```bash
 make docker-run
@@ -239,25 +269,81 @@ docker build -t ecommerce-purchase-intention-mlops .
 docker run -p 8000:8000 ecommerce-purchase-intention-mlops
 ```
 
+The container starts the FastAPI application on port `8000`. As with local API usage, predictions require a trained model artifact to be available inside the container.
+
+## Testing
+
+Run the test suite:
+
+```bash
+make test
+```
+
+Equivalent command:
+
+```bash
+python3 -m pytest
+```
+
+The tests are fast and do not require the real UCI dataset or committed model artifacts. They cover preprocessing, training on synthetic data, prediction with a temporary model artifact, and API behavior.
+
 ## CI/CD
 
-GitHub Actions runs on every push and pull request. The workflow uses `actions/setup-python`, installs the Python dependencies, and runs `python -m pytest` in the CI environment. It does not require the raw dataset, which keeps CI reliable for public repository review.
+GitHub Actions runs on push and pull request. The workflow:
 
-## Metric Interpretation
+1. checks out the repository
+2. sets up Python 3.11
+3. installs dependencies
+4. runs `python -m pytest`
 
-- ROC-AUC measures ranking quality across thresholds and is the model selection metric.
-- Precision answers: when the model predicts purchase, how often is it correct?
-- Recall answers: of actual purchasing sessions, how many did the model catch?
-- F1-score balances precision and recall.
-- The confusion matrix shows true negatives, false positives, false negatives, and true positives.
+CI intentionally does not depend on `data/raw/` or generated model artifacts.
 
-Accuracy is not used as the main metric because online purchase datasets are often imbalanced.
+## MLOps Components
+
+Included in this MVP:
+
+- reproducible Python package structure
+- data validation for the expected target column
+- scikit-learn preprocessing and model pipelines
+- deterministic train/test split
+- baseline model comparison
+- metric and metadata artifact saving
+- reusable prediction helper
+- FastAPI serving
+- pytest coverage
+- Dockerfile for local API packaging
+- GitHub Actions CI
+- model card
+- lightweight monitoring simulation
+
+Not included by design:
+
+- cloud deployment
+- Kubernetes
+- Terraform
+- Airflow
+- MLflow or model registry integration
+- production alerting or automated retraining
+
+## Model Card
+
+The model card is available at:
+
+```text
+reports/model_card.md
+```
+
+It documents the model purpose, intended use, model candidates, evaluation metrics, limitations, business risks, monitoring needs, and future improvements.
 
 ## Monitoring Concept
 
-The MVP includes a local monitoring simulation in `src/monitoring/drift_report.py`. It compares simple feature distributions between a reference CSV and a new CSV, then writes a JSON report under `reports/`.
+The monitoring note is available at:
 
-Example:
+```text
+reports/monitoring_report.md
+```
+
+The local monitoring script can compare simple feature distributions between two CSV files:
 
 ```bash
 python3 -m src.monitoring.drift_report \
@@ -265,22 +351,26 @@ python3 -m src.monitoring.drift_report \
   --new data/sample/sample_online_shoppers.csv
 ```
 
-This is not production monitoring. It is a lightweight demonstration of what would be tracked before a production system adds scheduled jobs, alerting, and model registry integration.
+This writes a JSON report to `reports/drift_report.json`, which is ignored by Git.
 
 ## Limitations
 
-- The project is local-first and does not deploy to cloud infrastructure.
-- The sample dataset is only for tests and examples.
+- This is a local-first portfolio MVP, not a full production system.
+- The real UCI dataset is excluded from Git and must be added locally.
+- The included sample CSV is only for tests and examples.
+- The current validation uses a deterministic holdout split, not time-based validation.
 - The baseline models are intentionally simple.
-- The API expects a previously trained local model artifact.
-- Monitoring is a simulation, not an operational alerting system.
-- Business impact is not validated with live conversion or intervention data.
+- Probability calibration and threshold tuning are not included yet.
+- Monitoring is a local simulation and does not include alerts, scheduled jobs, or historical tracking.
+- Business impact is not validated with live experiments or intervention outcomes.
 
-## Future Roadmap
+## Roadmap
 
-- Add calibrated probability evaluation.
-- Add threshold tuning based on business costs.
-- Add richer drift checks and scheduled batch reports.
-- Add experiment tracking, such as MLflow, after the MVP is stable.
-- Add model version comparison documentation.
-- Add a small front-end or dashboard only if it helps explain the workflow.
+Practical next steps:
+
+- add threshold tuning based on business costs
+- add probability calibration analysis
+- compare models with time-aware validation if timestamped data is available
+- add a lightweight experiment tracking option after the MVP is stable
+- extend monitoring reports with prediction distribution checks
+- document retraining criteria more formally
