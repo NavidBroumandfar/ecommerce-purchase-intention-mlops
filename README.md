@@ -12,6 +12,12 @@ It uses the UCI Online Shoppers Purchasing Intention Dataset and wraps a standar
 
 The project is intentionally scoped as a clean portfolio MVP. It is designed to demonstrate reproducibility, testing, API serving, and model lifecycle thinking without adding unnecessary infrastructure.
 
+**Public proof record:** this repository is also summarized on
+[navidbr.me/work/ecommerce-purchase-intention-mlops](https://navidbr.me/work/ecommerce-purchase-intention-mlops)
+as part of Navid's public NAVIDBR Applied AI Systems work record. The site
+keeps the same boundary: reproducible ML portfolio proof, not deployed
+commercial use or automated business decisions.
+
 ## Overview
 
 The project trains baseline machine learning models on session-level browsing behavior, selects the best candidate by ROC-AUC, saves the trained pipeline as a local artifact, and exposes predictions through a FastAPI endpoint.
